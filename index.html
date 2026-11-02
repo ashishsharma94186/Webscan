@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>WebScan</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1b2430;--card:#fff;--line:#d9dee5;--accent:#1f4fd8;
+--high:#b42318;--medium:#b54708;--low:#175cd3;--info:#667085}
+@media(prefers-color-scheme:dark){:root{--bg:#12161c;--fg:#e6e9ee;--card:#1b212a;--line:#2d3642;--accent:#7aa2ff;
+--high:#ff8a80;--medium:#ffb74d;--low:#8ab4ff;--info:#98a2b3}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem}input[type=url]{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--line);
+border-radius:6px;background:var(--card);color:var(--fg);font-size:1rem}
+label{display:flex;gap:8px;margin:12px 0;font-size:.9rem}
+button{padding:12px 20px;border:0;border-radius:6px;background:var(--accent);color:#fff;font-size:1rem;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.f{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--info);border-radius:6px;padding:12px 14px;margin:10px 0}
+.f.high{border-left-color:var(--high)}.f.medium{border-left-color:var(--medium)}.f.low{border-left-color:var(--low)}
+.sev{font-weight:600}.f small{color:var(--info)}#err{color:var(--high)}
+</style></head><body><main>
+<h1>Web application security scanner</h1>
+<p>Scan only systems you own or are authorized to test. Public hosts are blocked by default.</p>
+<input id="url" type="url" value="http://127.0.0.1:8000/?q=test" aria-label="Target URL">
+<label><input id="ok" type="checkbox"> I am authorized to test this target</label>
+<button id="go">Run scan</button> <p id="err" role="alert"></p><div id="out"></div>
+<script>
+const $=id=>document.getElementById(id);
+$("go").onclick=async()=>{
+  $("err").textContent="";$("out").textContent="Scanning…";
+  const r=await fetch("/api/scan",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url:$("url").value,confirmed:$("ok").checked})});
+  const d=await r.json();$("out").textContent="";
+  if(!r.ok){$("err").textContent=d.error;return}
+  const n=d.findings.length;
+  const h=document.createElement("p");
+  h.innerHTML=`${n} finding${n==1?"":"s"}. <a href="/report/${d.id}">Open printable report</a>`;
+  $("out").append(h);
+  d.findings.forEach(f=>{const e=document.createElement("div");e.className="f "+f.severity;
+    const t=document.createElement("div");t.innerHTML='<span class="sev"></span> '; 
+    t.querySelector(".sev").textContent=f.severity+": "+f.title;
+    const p=document.createElement("div");p.textContent=f.detail;
+    const s=document.createElement("small");s.textContent="Fix: "+f.fix;
+    e.append(t,p,s);$("out").append(e)});
+};
+</script></main></body></html>

@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Scan report #{{ scan.id }}</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;max-width:800px;margin:24px auto;padding:0 16px}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px 8px;text-align:left;vertical-align:top}
+.high{color:#b42318}.medium{color:#b54708}</style></head><body>
+<h1>Security scan report</h1>
+<p>Target: {{ scan.target }}<br>Date (UTC): {{ scan.created }}<br>Findings: {{ findings|length }}</p>
+<table><tr><th>Severity</th><th>Issue</th><th>Detail</th><th>Recommended fix</th></tr>
+{% for f in findings %}<tr><td class="{{ f.severity }}">{{ f.severity }}</td><td>{{ f.title }}</td>
+<td>{{ f.detail }}</td><td>{{ f.fix }}</td></tr>{% endfor %}</table>
+<p><em>Use your browser's Print → Save as PDF to export.</em></p></body></html>
